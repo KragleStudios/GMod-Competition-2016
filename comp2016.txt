@@ -3,4 +3,5 @@
 	"base"		"base"
 	"title"		"comp2016"
 	"menusystem"	"1"
+	"maps"		"sab_^"
 }

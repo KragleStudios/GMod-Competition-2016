@@ -17,19 +17,18 @@ function GAME:start( )
 	if SERVER then
 		self.wins = self.wins or 0
 		local props = {}
+		print("y")
 
 		local function MoveTheBarrels()
 			for k,v in pairs( player.GetAll() ) do
 				v:StripWeapons()
-				v:SetPos( Vector( 298.126862, -3.012531, -84.010544 ) )
-				v:SetEyeAngles( Angle( 0, 90, 0 ) )
 			end
 
 			for i = 1, 3 do
 				props[ i ] = ents.Create( "prop_physics" )
 				props[ i ]:SetModel( "models/props_borealis/bluebarrel001.mdl" )
-				props[ i ]:SetPos( Vector( 447 - ( i * 75 ), 169, -84 ) )
-				props[ i ]:DropToFloor()
+				props[ i ]:SetPos( Vector( 253.5 + ( i * 75 ), -336, 96 ) )
+				-- props[ i ]:DropToFloor()
 				props[ i ]:Spawn()
 				props[ i ]:SetCollisionGroup( COLLISION_GROUP_DEBRIS )
 				props[ i ]:GetPhysicsObject():EnableMotion( false ) -- Prevent people from knocking over barrels while they're moving
@@ -38,8 +37,8 @@ function GAME:start( )
 			local ballProp = math.random( 1, 3 )
 
 			net.Start("cup.sendSabData")
-				net.WriteUInt(ballProp, 8)
-			net.Send(GM.sab)
+				net.WriteEntity(props[ballProp])
+			net.Send(gm.sab)
 
 			local ball = ents.Create( "prop_physics" )
 			ball:SetModel( "models/maxofs2d/hover_classic.mdl" )
@@ -113,7 +112,7 @@ function GAME:start( )
 								for k,v in pairs( props ) do
 									v:Remove()
 								end
-								MoveTheBarrels()
+								self.endNow = true
 							end )
 
 						end
@@ -131,8 +130,10 @@ function GAME:start( )
 end
 
 net.Receive("cup.sendSabData", function()
+	local ent = net.ReadEntity()
+	print(ent)
 	hook.Add( "PreDrawHalos", "ShowCorrectBarrel", function()
-		halo.Add( { net.ReadUInt(8) }, Color( 0, 255, 0 ) )
+		halo.Add( { ent }, Color( 0, 255, 0 ) )
 	end )
 	chat.AddText( "Prevent the players for chosing the highlighted barrel, but don't act too suspicous." )
 end)
@@ -143,14 +144,14 @@ end
 
 function GAME:getWinner()
 	if self.wins > 1 then
-		return 1
+		return TEAM_PLAYER
 	else
-		return 2
+		return TEAM_SAB
 	end
 end
 
 function GAME:shouldEnd()
-	return false
+	return self.endNow
 end
 
-GM:registerGame(GAME)
+gm:registerGame(GAME)

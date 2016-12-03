@@ -1,7 +1,8 @@
 if (SERVER) then AddCSLuaFile() end
 
 TEAM_PLAYER = 1
-TEAM_SPEC   = 2
+TEAM_SAB = 2
+TEAM_SPEC   = 1000
 
 
 --don't setup sab team, we don't want them be seen outside of the "players"
@@ -16,7 +17,7 @@ function ply:isSab()
 end
 
 function ply:isSpec()
-	return self:getData().team == TEAM_SPEC
+	return self:Team() == TEAM_SPEC
 end
 
 function ply:isPlaying()
@@ -62,7 +63,7 @@ if (SERVER) then
 
 		local ply = nil
 
-		while ply == nil or self.sab == ply do
+		while not IsValid(ply) or self.sab == ply do
 			ply = activePlayers[ math.random(1, #activePlayers) ]
 		end
 

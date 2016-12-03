@@ -11,7 +11,7 @@ gm.games = gm.games or {}
 
 ROUND_PREP = 1
 GAME_ENDING = 2
---ROUND_ENDING = 3
+ROUND_ENDING = 3
 STATUS_PLAYING = 4
 
 function gm:registerGame(data)
@@ -32,8 +32,24 @@ local basePath = gm.FolderName .. "/gamemode/core/gameHandling/games"
 local files = file.Find(basePath .. "/*.lua", "LUA")
 
 for _,file in pairs(files) do
-	
-	include_sh(basePath .. "/" .. file)
+	--[[local G = table.Copy(_G)
+
+	-- Track all hooks that are added so they are correctly cleaned up at the end of rounds.
+	function G.hook.Add(_hook, name, func)
+		if not gm.tempHooks[_hook] then
+			gm.tempHooks[_hook] = {}
+		end
+		gm.tempHooks[_hook][name] = func
+
+		hook.Add(_hook, name, func)
+	end
+
+	function G.hook.Remove(_hook, name)
+		gm.tempHooks[_hook][name] = nil
+		hook.Remove(_hook, name)
+	end
+
+	setfenv(function() ]] include_sh(basePath .. "/" .. file) --[[end, G)]] -- Someone fix this please
 
 	print("Including game: ".. file)
 end
