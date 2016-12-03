@@ -26,6 +26,8 @@ GM.loaded      = {}
 
 GM.config = {}
 
+gm = GM or GAMEMODE
+
 include_sv("configs/server.lua")
 include_sh("configs/shared.lua")
 include_cl("configs/client.lua")
