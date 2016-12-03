@@ -1,6 +1,4 @@
-DeriveGamemode("sandbox")
-
-GM.Name = ""
+GM.Name = "The Saboteur"
 GM.SmallName = ""
 GM.Author = "Mikey Howell, meharryrp, crazyscouter"
 GM.Email = ""
@@ -55,4 +53,10 @@ end
 
 for k,v in pairs(GM.mod_sources) do
 	if not (GM[ k ]) then GM.dep(SHARED, k) end
+end
+
+function GM:PlayerSetModel(ply)
+	ply:SetModel(player_manager.TranslatePlayerModel(ply:GetInfo("cl_playermodel")))
+
+	-- randomize player model colour
 end

@@ -1,8 +1,8 @@
 local hud = nil
 net.Receive("gm.updateHud", function()
-	local game = ndoc.table.GM.game
+	local game = ndoc.table.gm.game
 
-	hud = GM.games[ game ].cHud
+	hud = gm.games[ game ].cHud
 end)
 
 net.Receive("gm.clearHud", function()

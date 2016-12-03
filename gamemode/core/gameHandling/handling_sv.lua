@@ -28,8 +28,10 @@ function gm:startGame(sName)
 	
 	self:setStatus(ROUND_PREP)
 
-	self.rounds_left     = gameData.rounds
-	self.game_timeLimit  = gameData.time
+	self.rounds_left     = self.gameData.rounds
+	self.game_timeLimit  = self.gameData.time
+
+	gm:chooseSab()
 
 	net.Start("gm.updateHud")
 	net.Broadcast()
@@ -39,6 +41,14 @@ end
 function gm:endGame()
 	gm:updateTime(ending_time)
 	gm:setStatus(GAME_ENDING)
+
+	for k,v in pairs(self:getSpectators()) do
+		v:SetTeam(TEAM_PLAYER)
+	end
+
+	for k,v in pairs(self:getPlayers()) do
+		v:Freeze(true)
+	end
 
 	gm:voteForNextGame(function(sName)
 
@@ -53,17 +63,11 @@ end
 function gm:endRound()
 	game.CleanUpMap()
 
-	for k,v in pairs(self:getSpectators()) do
-		v:SetTeam(TEAM_PLAYER)
-	end
-
-	for k,v in pairs(self:getPlayers()) do
-		v:Freeze(true)
-	end
+	gm:setStatus(ROUND_ENDING)
 end
 
 function gm:startRound()
-	self.gameData.start()
+	self.gameData:start()
 
 	for k,v in pairs(self:getPlayers()) do
 		v:Freeze(false)
@@ -71,11 +75,11 @@ function gm:startRound()
 end
 
 function gm:shouldEnd()
-	return self.gameData.shouldEnd()
+	return self.gameData:shouldEnd()
 end
 
 function gm:getWinner()
-	return self.gameData.getWinner()
+	return self.gameData:getWinner()
 end
 
 function gm:sendVoice(ply)
@@ -102,7 +106,7 @@ timer.Create("round_handler", 1, 0, function()
 			
 			gm:startRound()
 			
-			gm:updateTime(self.game_timeLimit)
+			gm:updateTime(gm.game_timeLimit)
 			gm:setStatus(STATUS_PLAYING)
 
 		elseif (cur_status == GAME_ENDING) then
@@ -113,6 +117,13 @@ timer.Create("round_handler", 1, 0, function()
 		elseif (cur_status == STATUS_PLAYING and rounds_left == 0) then
 
 			gm:endGame()
+
+		elseif (cur_status == ROUND_ENDING)
+
+			gm:startRound()
+
+			gm:updateTime(gm.game_timeLimit)
+			gm:setStats(STATUS_PLAYING)
 
 		else
 
