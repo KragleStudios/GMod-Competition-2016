@@ -118,7 +118,7 @@ timer.Create("round_handler", 1, 0, function()
 
 			gm:endGame()
 
-		elseif (cur_status == ROUND_ENDING)
+		elseif (cur_status == ROUND_ENDING) then
 
 			gm:startRound()
 
