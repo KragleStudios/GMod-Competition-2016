@@ -39,13 +39,16 @@ function gm:startGame(sName)
 end
 
 concommand.Add("startgame", function()
-	gm:startGame("Find the ball")
+	gm:startGame("Poisoned Watermelon")
 end)
 
 --do the updating functions in here, so the game can call this too and kill it whenever.
 function gm:endGame()
 	gm:updateTime(ending_time)
 	gm:setStatus(GAME_ENDING)
+
+	--to prevent tons of endGame getting called 
+	gm:updateTime(nil)
 
 	gm:voteForNextGame(20, function(sName)
 
@@ -58,6 +61,10 @@ function gm:endGame()
 end
 
 function gm:endRound()
+	for k,v in pairs(player.GetAll()) do
+		v:StripWeapons()
+	end
+
 	game.CleanUpMap()
 
 	gm:setStatus(ROUND_PREP)
@@ -72,16 +79,15 @@ function gm:endRound()
 		v:SetTeam(TEAM_PLAYER)
 	end
 
-	for k,v in pairs(self:getPlayers()) do
-		v:Freeze(true)
-	end
 end
 
 function gm:startRound()
 	self.gameData:start()
 
 	for k,v in pairs(self:getPlayers()) do
-		v:Freeze(false)
+		for _, wep in pairs(self.gameData.loadout) do
+			v:Give(wep)
+		end
 	end
 end
 
@@ -150,11 +156,11 @@ timer.Create("round_handler", 1, 0, function()
 		end
 	end
 
-	gm:updateTime(gm.time_left - 1)
+	gm:updateTime((gm.time_left or time_left) - 1 )
 end)
 
 hook.Add("PlayerDisconnected", "ShouldEnd", function(ply)
-	if (ply:isSab() and gm.status == STATUS_PLAYING) then
+	if (gm.sab and gm.sab == ply and gm.status == STATUS_PLAYING) then
 		gm:endGame()
 	end
 end)

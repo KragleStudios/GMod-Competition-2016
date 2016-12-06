@@ -23,7 +23,8 @@ function gm:registerGame(data)
 		getWin = data.getWinner,
 		shouldEnd = data.shouldEnd,
 		instructions = data.instruction_link,
-		objectives = data.objectives
+		objectives = data.objectives,
+		loadout = data.loadout
 	}
 
 	if (SERVER) then ndoc.table.gm.games[ data.name ] = {data.desc, data.logo} end
