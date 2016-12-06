@@ -101,4 +101,4 @@ local function createGameVoteMenu()
 		desc:SetAutoStretchVertical(true)
 	end
 end
-concommand.Add("vote", createGameVoteMenu)
+net.Receive("votes.gameVoteMap", createGameVoteMenu)

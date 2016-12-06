@@ -110,7 +110,7 @@ function gm:getGameMostVoted()
 	return maxVotedGame, maxVotesForGame
 end
 
-function gm:voteForNextGame(callback)
+function gm:voteForNextGame(length, callback)
 	ndoc.table.gmGameVotes = {games = {}, votes = 0}
 	local playersWhoCanVote = self:getPlayers()
 	local playersCount = #playersWhoCanVote

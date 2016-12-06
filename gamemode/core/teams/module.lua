@@ -9,12 +9,7 @@ TEAM_SPEC   = 1000
 team.SetUp(TEAM_PLAYER, "Player", Color(25, 255, 25))
 team.SetUp(TEAM_SPEC, "Spectator", Color(255, 255, 255))
 
---we won't sync sab player over netdoc, to prevent others from knowing who it is.
---only the player who is the sab will have this variable set on them.
 local ply = FindMetaTable("Player")
-function ply:isSab()
-	return SERVER and (gm.Sab == self) or (self:GetNWInt("Sab", 0) == 1)
-end
 
 function ply:isSpec()
 	return self:Team() == TEAM_SPEC
@@ -48,14 +43,6 @@ function gm:getSpectators()
 	return tab
 end
 
-hook.Add("PlayerInitialSpawn", "SetTeams", function(ply)
-	if (not gm.status or gm.status == STATUS_PLAYING) then
-		ply:SetTeam(TEAM_SPEC)
-
-	elseif (gm.status == ROUND_PREP) then
-		ply:SetTeam(TEAM_PLAYER)
-	end
-end)
 
 if (SERVER) then
 	function gm:chooseSab()
@@ -69,14 +56,29 @@ if (SERVER) then
 
 		hook.Call("OnSabChosen", self, self.sab, ply)
 
-		--remove old sab
-		if (self.sab) then
-			self.sab:SetNWInt("Sab", 0)
-		end
-
 		self.sab = ply
 		ply:SetNWInt("Sab", 1)
 
+		net.Start("sab.verified")
+			net.WriteBool(false)
+		net.Broadcast()
+
+		net.Start("sab.verified")
+			net.WriteBool(true)
+		net.Send(ply)
+
 		return sab
 	end
+
+	util.AddNetworkString("sab.verified")
+
+	hook.Add("PlayerInitialSpawn", "SetTeams", function(ply)
+		if (not gm.status or gm.status == STATUS_PLAYING) then
+			ply:SetTeam(TEAM_SPEC)
+
+		elseif (gm.status == ROUND_PREP) then
+			ply:SetTeam(TEAM_PLAYER)
+		end
+	end)
+
 end
