@@ -3,8 +3,12 @@ GAME = {}
 GAME.name = "Find the ball"
 GAME.desc = "Follow the cup the ball is under, then select the correct cup to win!"
 GAME.time = 300
-GAME.rounds = 3
+GAME.rounds = 1
 GAME.instruction_link = ""
+GAME.objectives = {
+	["sab"] = {"Prevent the players from selecting the correct barrel!"},
+	["players"] = {"Select the correct barrel! Make sure you talk with your team!"}
+}
 GAME.logo = ""
 
 if (SERVER) then
@@ -112,7 +116,7 @@ function GAME:start( )
 								for k,v in pairs( props ) do
 									v:Remove()
 								end
-								self.endNow = true
+								gm:endRound()
 							end )
 
 						end

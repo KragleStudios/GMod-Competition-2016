@@ -25,6 +25,7 @@ function gm:startGame(sName)
 
 	self.time_left = prep_time
 	ndoc.table.gm.time_left = prep_time
+	ndoc.table.gm.rounds_left = self.gameData.rounds
 	
 	self:setStatus(ROUND_PREP)
 
@@ -37,20 +38,16 @@ function gm:startGame(sName)
 	net.Broadcast()
 end
 
+concommand.Add("startgame", function()
+	gm:startGame("Find the ball")
+end)
+
 --do the updating functions in here, so the game can call this too and kill it whenever.
 function gm:endGame()
 	gm:updateTime(ending_time)
 	gm:setStatus(GAME_ENDING)
 
-	for k,v in pairs(self:getSpectators()) do
-		v:SetTeam(TEAM_PLAYER)
-	end
-
-	for k,v in pairs(self:getPlayers()) do
-		v:Freeze(true)
-	end
-
-	gm:voteForNextGame(function(sName)
+	gm:voteForNextGame(20, function(sName)
 
 		gm:startGame(sName)
 
@@ -63,7 +60,21 @@ end
 function gm:endRound()
 	game.CleanUpMap()
 
-	gm:setStatus(ROUND_ENDING)
+	gm:setStatus(ROUND_PREP)
+	gm:updateTime(prep_time)
+
+	local rounds_left = self.rounds_left
+
+	self.rounds_left = rounds_left - 1
+	ndoc.table.gm.rounds_left = rounds_left - 1
+
+	for k,v in pairs(self:getSpectators()) do
+		v:SetTeam(TEAM_PLAYER)
+	end
+
+	for k,v in pairs(self:getPlayers()) do
+		v:Freeze(true)
+	end
 end
 
 function gm:startRound()
@@ -102,6 +113,12 @@ timer.Create("round_handler", 1, 0, function()
 	end
 
 	if (time_left == 0) then
+		if (rounds_left == 0) then
+			gm:endGame()
+
+			return
+		end
+
 		if (cur_status == ROUND_PREP) then
 			
 			gm:startRound()
@@ -109,34 +126,27 @@ timer.Create("round_handler", 1, 0, function()
 			gm:updateTime(gm.game_timeLimit)
 			gm:setStatus(STATUS_PLAYING)
 
+		elseif (cur_status == STATUS_PLAYING) then
+			
+			if (rounds_left == 0) then
+				gm:endGame()
+			else			
+
+				gm:endRound()
+
+				local sab = gm:chooseSab()
+				gm:sendVoice(sab)
+			end
+
 		elseif (cur_status == GAME_ENDING) then
 
 			local nextGame = gm:getGameMostVoted()
 			gm:startGame(nextGame)
 
-		elseif (cur_status == STATUS_PLAYING and rounds_left == 0) then
+		elseif (rounds_left == 0) then
 
 			gm:endGame()
 
-		elseif (cur_status == ROUND_ENDING) then
-
-			gm:startRound()
-
-			gm:updateTime(gm.game_timeLimit)
-			gm:setStats(STATUS_PLAYING)
-
-		else
-
-			gm:endRound()
-
-			gm.rounds_left = rounds_left - 1
-			ndoc.table.gm.rounds_left = rounds_left - 1
-
-			gm:updateTime(prep_time)
-			gm:setStatus(ROUND_PREP)
-
-			local sab = gm:chooseSab()
-			gm:sendVoice(sab)
 		end
 	end
 
