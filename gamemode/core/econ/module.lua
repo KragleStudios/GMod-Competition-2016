@@ -1,3 +1,5 @@
+local meta = FindMetaTable("Player")
+
 if (SERVER) then
 	AddCSLuaFile()
 
@@ -20,7 +22,6 @@ if (SERVER) then
 	end
 end
 
-local meta = FindMetaTable("Player")
 function meta:canAfford(amt)
 	amt = math.abs(amt)
 
