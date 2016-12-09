@@ -10,6 +10,7 @@ GAME.objectives = {
 	["players"] = {"Select the correct barrel! Make sure you talk with your team!"}
 }
 GAME.logo = ""
+GAME.winnerMoney = nil --optional, default is 300
 
 if (SERVER) then
 	util.AddNetworkString("cup.sendSabData")

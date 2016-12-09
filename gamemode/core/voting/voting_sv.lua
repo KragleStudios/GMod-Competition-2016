@@ -134,8 +134,10 @@ function gm:voteForNextGame(length, callback)
 			callback(votedGame)
 		end
 	end)
-end
 
-concommand.Add("createGameVote", function()
-	gm:voteForNextGame(function(name) print('VOTED FOR WON: ', name) end)
-end)
+	timer.Simple(length, function()
+		local votedFor = gm:getGameMostVoted()
+
+		callback(votedFor)
+	end)
+end

@@ -57,7 +57,6 @@ if (SERVER) then
 		hook.Call("OnSabChosen", self, self.sab, ply)
 
 		self.sab = ply
-		ply:SetNWInt("Sab", 1)
 
 		net.Start("sab.verified")
 			net.WriteBool(false)

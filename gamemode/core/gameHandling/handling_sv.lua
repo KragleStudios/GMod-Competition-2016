@@ -18,6 +18,7 @@ function gm:updateTime(time)
 end
 
 function gm:startGame(sName)
+	self.ending = false
 	self.gameData = gm.games[ sName ]
 	game.CleanUpMap()
 
@@ -36,6 +37,8 @@ function gm:startGame(sName)
 
 	net.Start("gm.updateHud")
 	net.Broadcast()
+
+	hook.Call("GMGameStarted", GAMEMODE, self.gameData)
 end
 
 concommand.Add("startgame", function()
@@ -44,6 +47,10 @@ end)
 
 --do the updating functions in here, so the game can call this too and kill it whenever.
 function gm:endGame()
+	if (self.ending) then return end
+
+	self.ending = true
+
 	gm:updateTime(ending_time)
 	gm:setStatus(GAME_ENDING)
 
@@ -56,8 +63,23 @@ function gm:endGame()
 
 	end)
 
+	local winner = self:getWinner()
+	local winningAmt = self.gameData.winnerMoney or gm.config.winnerMoney
+	if (winner == TEAM_PLAYER) then
+		
+		for k,v in pairs(self:getPlayers()) do
+			v:addMoney(winningAmt)
+		end
+	
+	elseif (winner == TEAM_SAB) then
+		
+		self.sab:addMoney(winningAmt)
+	end
+
 	net.Start("gm.clearHud")
 	net.Broadcast()
+
+	hook.Call("GMGameEnded", GAMEMODE, self.gameData)
 end
 
 function gm:endRound()
@@ -79,6 +101,7 @@ function gm:endRound()
 		v:SetTeam(TEAM_PLAYER)
 	end
 
+	hook.Call("GMRoundEnded", GAMEMODE, self.gameData, self.rounds_left)
 end
 
 function gm:startRound()
@@ -89,6 +112,8 @@ function gm:startRound()
 			v:Give(wep)
 		end
 	end
+
+	hook.Call("GMRoundStarted", GAMEMODE, self.gameData)
 end
 
 function gm:shouldEnd()
@@ -144,10 +169,10 @@ timer.Create("round_handler", 1, 0, function()
 				gm:sendVoice(sab)
 			end
 
-		elseif (cur_status == GAME_ENDING) then
+		--[[else if (cur_status == GAME_ENDING) then
 
 			local nextGame = gm:getGameMostVoted()
-			gm:startGame(nextGame)
+			gm:startGame(nextGame)]]--
 
 		elseif (rounds_left == 0) then
 
